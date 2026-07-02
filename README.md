@@ -1,12 +1,12 @@
 # Infra Worker
 
-> The distributed AI inference runtime of InfraMesh.
+> The distributed AI execution runtime of InfraMesh.
 
-Infra Worker is the execution engine of the InfraMesh platform.
+Infra Worker is the execution runtime of the InfraMesh platform.
 
-It executes AI inference requests from Infra Router or external applications and returns responses to the caller.
+It executes execution plans received from Infra Router or directly from external applications and performs AI inference using one or more AI providers.
 
-Unlike the Console and Router, the Worker is the only component responsible for communicating with AI providers.
+Unlike the Console and Router, the Worker is responsible only for execution. It never performs orchestration, planning, or routing decisions.
 
 Workers are independently deployable, horizontally scalable, and can run anywhere—from a local laptop to large GPU clusters.
 
@@ -14,7 +14,7 @@ Workers are independently deployable, horizontally scalable, and can run anywher
 
 # Overview
 
-InfraMesh separates infrastructure management, request routing, and inference execution into independent components.
+InfraMesh separates management, orchestration, and execution into independent components.
 
 ```
                  +----------------------+
@@ -26,10 +26,10 @@ InfraMesh separates infrastructure management, request routing, and inference ex
                             |
                  +----------v-----------+
                  |    Infra Router      |
-                 |    Routing Layer     |
+                 | AI Orchestration     |
                  +----------+-----------+
                             |
-                  Inference Requests
+                    Execution Plans
                             |
         +-------------------+-------------------+
         |                                       |
@@ -41,9 +41,15 @@ InfraMesh separates infrastructure management, request routing, and inference ex
  OpenAI / Gemini / Ollama / Claude / Custom AI
 ```
 
-Workers execute AI inference.
+Each component has a single responsibility.
 
-They never perform routing or infrastructure management.
+- Console manages infrastructure.
+- Router builds execution plans.
+- Workers execute those plans.
+
+The Worker never decides how a request should be executed.
+
+It simply executes the execution plan provided by the Router.
 
 ---
 
@@ -51,15 +57,16 @@ They never perform routing or infrastructure management.
 
 Infra Worker is responsible for:
 
-- Executing AI inference
+- Executing execution plans
+- Performing AI inference
 - Managing AI provider connections
 - Streaming AI responses
 - Reporting health status
-- Advertising supported capabilities
+- Advertising runtime capabilities
 - Managing local AI resources
-- Executing custom inference logic
+- Executing custom AI integrations
 
-Workers never perform request routing.
+Workers never perform orchestration or routing.
 
 ---
 
@@ -67,7 +74,7 @@ Workers never perform request routing.
 
 ## Independent Runtime
 
-Every Worker is a standalone server.
+Every Worker is a standalone runtime.
 
 A Worker can:
 
@@ -95,15 +102,15 @@ Supported providers may include:
 - Local LLMs
 - Custom AI Services
 
-Each Worker can support one or many providers.
+Each Worker may support one or many providers.
 
 ---
 
 # Extensibility
 
-Infra Worker does not force any AI framework.
+Infra Worker does not enforce a specific AI framework.
 
-Users are free to choose their preferred implementation.
+Organizations are free to choose the implementation that best fits their environment.
 
 Examples include:
 
@@ -128,7 +135,7 @@ Examples include:
 
 InfraMesh defines the communication protocol.
 
-How AI inference is implemented is completely up to the Worker implementation.
+How inference is executed is entirely up to the Worker implementation.
 
 ---
 
@@ -136,23 +143,25 @@ How AI inference is implemented is completely up to the Worker implementation.
 
 Infra Worker is **not a Java library**.
 
-It is an executable runtime that provides the infrastructure required to participate in the InfraMesh network.
+It is an executable runtime that participates in the InfraMesh network.
 
-Users may:
+Organizations may:
 
 - Use the default Worker runtime
-- Connect their own AI implementation
-- Extend the Worker with additional capabilities
-- Build a completely custom Worker
-- Deploy multiple Workers with different AI providers
+- Connect existing AI services
+- Extend Worker capabilities
+- Build custom Worker implementations
+- Deploy multiple Workers with different specializations
 
-The Worker acts as an execution engine rather than an AI framework.
+Workers are intentionally simple.
+
+They focus entirely on execution, while orchestration and planning remain the responsibility of the Router.
 
 ---
 
 # Standalone Deployment
 
-Workers can operate completely independently.
+Workers can operate independently.
 
 ```
 Application
@@ -164,7 +173,7 @@ Infra Worker
 OpenAI
 ```
 
-Or as part of a distributed infrastructure.
+Or as part of a distributed AI infrastructure.
 
 ```
 Application
@@ -179,7 +188,7 @@ Infra Worker
 OpenAI
 ```
 
-Organizations can adopt InfraMesh gradually without deploying every component.
+This allows organizations to adopt InfraMesh incrementally.
 
 ---
 
@@ -192,21 +201,23 @@ Example:
 ```json
 {
   "workerId": "worker-01",
+  "groups": [
+    "coding",
+    "review"
+  ],
   "providers": [
-    "openai",
-    "ollama"
+    "openai"
   ],
   "models": [
     "gpt-5",
-    "gpt-4.1",
-    "llama3"
+    "gpt-4.1"
   ],
   "streaming": true,
   "maxConcurrency": 16
 }
 ```
 
-Routers use these capabilities when selecting the best Worker.
+Routers use these capabilities when building execution plans and selecting the most appropriate Workers.
 
 ---
 
@@ -225,7 +236,7 @@ Authentication is configurable for secure deployments.
 
 # Health Reporting
 
-Workers periodically report runtime information.
+Workers periodically publish runtime information.
 
 Examples include:
 
@@ -238,7 +249,7 @@ Examples include:
 - Supported models
 - Runtime version
 
-This information enables intelligent routing.
+This information enables intelligent execution planning and Worker selection.
 
 ---
 
@@ -250,11 +261,13 @@ Workers support both execution modes.
 
 ```
 Request
-    │
-    ▼
+
+↓
+
 Inference
-    │
-    ▼
+
+↓
+
 Complete Response
 ```
 
@@ -262,18 +275,25 @@ Complete Response
 
 ```
 Request
-    │
-    ▼
+
+↓
+
 Inference
-    │
-    ▼
+
+↓
+
 Token
+
+↓
+
 Token
-Token
+
+↓
+
 Token
 ```
 
-Streaming responses are forwarded immediately without buffering the entire response.
+Streaming responses are forwarded immediately as tokens are generated.
 
 ---
 
@@ -285,11 +305,13 @@ Typical deployment options include:
 
 ```
 Application
-        │
-        ▼
+
+↓
+
 Infra Worker
-        │
-        ▼
+
+↓
+
 OpenAI
 ```
 
@@ -297,14 +319,21 @@ OpenAI
 
 ```
 Application
-        │
-        ▼
+
+↓
+
 Infra Router
-        │
-        ▼
+
+↓
+
+Execution Plan
+
+↓
+
 Infra Worker
-        │
-        ▼
+
+↓
+
 OpenAI
 ```
 
@@ -312,12 +341,13 @@ OpenAI
 
 ```
 Infra Worker
-       │
-       ▼
+
+↓
+
 Your AI Service
 ```
 
-Workers can be packaged as:
+Workers can be deployed as:
 
 - Docker containers
 - Kubernetes workloads
@@ -331,13 +361,13 @@ Workers can be packaged as:
 
 Infra Worker follows several core principles.
 
+- Protocol First
+- Execution Focused
 - Independent Deployment
 - Executable Runtime
 - AI Provider Agnostic
 - Framework Agnostic
-- Protocol First
 - Vendor Neutral
-- Lightweight
 - Streaming First
 - Horizontally Scalable
 - Extensible
@@ -366,8 +396,8 @@ Planned capabilities include:
 | Project | Description |
 |----------|-------------|
 | infra-console | Control Plane |
-| infra-router | AI Request Router |
-| infra-worker | AI Worker Runtime |
+| infra-router | AI Orchestration Engine |
+| infra-worker | AI Execution Runtime |
 
 ---
 
