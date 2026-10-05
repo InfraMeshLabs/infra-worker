@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
+dependencies {
+    // InfraMesh Node SDK - node contract plus the Outbound Connection SDK (persistent Console
+    // connection, auto-configured only when inframesh.node.connection-mode=OUTBOUND)
+    implementation 'io.github.inframeshai:inframesh-node:0.1.1'
+
+    // Web Application
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-webmvc-test'
+
+    implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}
+
+springBoot {
+    mainClass = 'koboolean.example.WorkerWebMvcExampleApplication'
+}

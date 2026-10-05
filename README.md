@@ -54,7 +54,7 @@ Each component has a clear responsibility:
 - **Console** manages the platform, determines eligible Workers, applies routing strategies, and orchestrates inference requests.
 - **Router** optionally selects a Worker when routing is delegated to a Router node.
 - **Worker** performs the actual AI inference.
-- **infra-node** defines the common SDK, DTOs, health contracts, authentication support, and node integration specifications.
+- **infra-node** defines the common SDK, DTOs, health contracts, authentication support, node integration specifications, and the Outbound Connection SDK used by both Workers and Routers.
 
 A Router is not required for every Worker invocation.
 
@@ -82,6 +82,7 @@ The SDK provides common components and contracts required to participate in the 
 - API key authentication
 - Servlet and reactive integrations
 - Common node configuration
+- Outbound Connection SDK — the persistent Console connection (WebSocket client, authentication, heartbeat, reconnect, lifecycle) used in OUTBOUND mode
 
 During local development, the SDK can be included as a JAR dependency.
 
@@ -572,6 +573,112 @@ curl \
   -H "X-Infra-Api-Key: <api-key>" \
   http://localhost:8082/api/v1/health
 ```
+
+---
+
+# Connection Mode
+
+A Worker can reach Console in one of two ways, controlled by `inframesh.node.connection-mode`. Both modes coexist; OUTBOUND does not replace DIRECT.
+
+```text
+DIRECT (default)
+   Console -> Worker, over HTTP, per request
+
+OUTBOUND
+   Worker -> Console, one persistent WebSocket connection
+```
+
+```text
+                    DIRECT                               OUTBOUND
+
+              Console                                 Console
+                 │                                       ▲
+                 │ HTTP request                          │ Persistent WebSocket
+                 ▼                                       │
+              Worker                         infra-node Connection SDK
+                                                         │
+                                                      Worker
+```
+
+Responsibilities are split between the two projects:
+
+```text
+infra-node    Common SDK + Connection Infrastructure
+              (WebSocket client, authentication header, heartbeat, reconnect,
+               backoff / jitter, lifecycle, graceful shutdown, NodeEnvelope transport)
+
+infra-worker  Worker Reference Implementation + Inference
+              (Worker REQUEST handler, WorkerRequest handling, inference service,
+               AI runtime call, ChatResponse)
+```
+
+A Worker never implements connection infrastructure itself; `infra-worker` contains no WebSocket, heartbeat, or reconnect code.
+
+DIRECT requires no configuration beyond `infra.node.api-key` and matches every example module's default `application.yml`. OUTBOUND is opt-in: the `infra-node` dependency already contains the connection, which is auto-configured only when `connection-mode` is `OUTBOUND`:
+
+```yaml
+inframesh:
+  node:
+    connection-mode: OUTBOUND
+    console-url: ${INFRAMESH_CONSOLE_URL}
+    node-id: ${INFRAMESH_NODE_ID}
+    credential: ${INFRAMESH_NODE_CREDENTIAL}
+
+    outbound:
+      heartbeat-interval: 10s
+      reconnect:
+        initial-delay: 1s
+        max-delay: 30s
+```
+
+`node-id` and `credential` are the values issued by Node Registration; they are read from the environment and are never logged. Every example module ships this as an opt-in `outbound` Spring profile (`src/main/resources/application-outbound.yml`):
+
+```bash
+INFRAMESH_CONSOLE_URL=https://console.example.com \
+INFRAMESH_NODE_ID=<uuid> \
+INFRAMESH_NODE_CREDENTIAL=<credential> \
+./gradlew :worker-stream-example:bootRun --args='--spring.profiles.active=outbound'
+```
+
+## Inference over Outbound Connection
+
+```text
+Console
+   │ NodeEnvelope REQUEST (payload: WorkerRequest, requestId)
+   ▼
+Persistent WebSocket
+   │
+   ▼
+infra-node Connection SDK
+   │
+   ▼
+Worker REQUEST Handler   (NodeRequestHandler<WorkerRequest, ChatResponse> bean)
+   │
+   ▼
+WorkerService.invoke     (same inference pipeline as DIRECT POST /api/v1/invoke)
+   │
+   ▼
+AI Runtime
+   │
+   ▼
+infra-node Connection SDK
+   │ NodeEnvelope RESPONSE (payload: ChatResponse, same requestId) — or ERROR
+   ▼
+Console
+```
+
+The only OUTBOUND-specific code in a Worker is its REQUEST handler bean, which reuses the DIRECT inference service (see each example's `Application` class):
+
+```java
+@Bean
+public NodeRequestHandler<WorkerRequest, ChatResponse> outboundRequestHandler(WorkerService workerService) {
+    return NodeRequestHandler.of(WorkerRequest.class, request -> workerService.invoke(request).block());
+}
+```
+
+The SDK runs the handler off the WebSocket listener thread (blocking is safe; heartbeats and other in-flight requests keep working), replies with `RESPONSE`, and turns an inference exception into an `ERROR` carrying its message. A Worker with no such bean still connects and heartbeats normally but rejects `REQUEST`s with an `ERROR`. Connection details — handshake headers, heartbeat, reconnect with exponential backoff and jitter, graceful shutdown, dropping a late RESPONSE for a replaced connection — are documented in the `infra-node` README.
+
+Streaming over the outbound connection is not implemented yet, so `/api/v1/stream` remains DIRECT-only.
 
 ---
 
@@ -1151,6 +1258,9 @@ Worker contracts
 Health contracts
 Authentication integration
 Node integration
+Outbound Connection SDK
+  (WebSocket client, heartbeat, reconnect,
+   lifecycle, NodeEnvelope transport)
 ```
 
 ---

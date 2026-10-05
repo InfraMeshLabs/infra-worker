@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.44/503fd0b002dbb237fa4656cf4b8021666a8aebac/lombok-1.18.44.jar" />
+        </processorPath>
+        <module name="infra-worker.worker-tool-example.main" />
+        <module name="infra-worker.worker-webmvc-example.main" />
+        <module name="infra-worker.worker-stream-example.main" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="25" />
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="infra-worker.worker-connection" options="-parameters" />
+      <module name="infra-worker.worker-connection.main" options="-parameters" />
+      <module name="infra-worker.worker-connection.test" options="-parameters" />
+      <module name="infra-worker.worker-stream-example" options="-parameters" />
+      <module name="infra-worker.worker-stream-example.main" options="-parameters" />
+      <module name="infra-worker.worker-stream-example.test" options="-parameters" />
+      <module name="infra-worker.worker-tool-example" options="-parameters" />
+      <module name="infra-worker.worker-tool-example.main" options="-parameters" />
+      <module name="infra-worker.worker-tool-example.test" options="-parameters" />
+      <module name="infra-worker.worker-webmvc-example" options="-parameters" />
+      <module name="infra-worker.worker-webmvc-example.main" options="-parameters" />
+      <module name="infra-worker.worker-webmvc-example.test" options="-parameters" />
+    </option>
+  </component>
+</project>

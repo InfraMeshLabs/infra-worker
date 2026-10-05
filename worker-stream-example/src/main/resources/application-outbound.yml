@@ -1,0 +1,18 @@
+# Activate with --spring.profiles.active=outbound (or SPRING_PROFILES_ACTIVE=outbound).
+# Opts this Worker into a persistent outbound WebSocket connection to Console
+# instead of the DIRECT (Console-calls-Worker) mode used by default.
+#
+# nodeId/credential come from Node Registration and must never be committed;
+# they are read from environment variables here.
+inframesh:
+  node:
+    connection-mode: ${INFRAMESH_CONNECTION_MODE:OUTBOUND}
+    console-url: ${INFRAMESH_CONSOLE_URL:http://localhost:8080}
+    node-id: ${INFRAMESH_NODE_ID:7b2fd6ca-f3ef-472d-b3b1-a391e066a3a2}
+    credential: ${INFRAMESH_NODE_CREDENTIAL:C7E1vKRegJlwMM4S2NTOSdzBXgOX4irxD19X2NoynAE}
+    outbound:
+      heartbeat-interval: 10s
+      health-interval: 30s
+      reconnect:
+        initial-delay: 1s
+        max-delay: 30s
