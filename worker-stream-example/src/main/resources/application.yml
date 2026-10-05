@@ -1,0 +1,14 @@
+server:
+  port: ${SERVER_PORT:8081}
+spring:
+  ai:
+    openai:
+      base-url: http://192.168.45.121:8000/v1
+      api-key: dummy
+      chat:
+        temperature: 0.7
+        model: Qwen/Qwen3.5-0.8B
+  application:
+    name: worker-stream-example
+  profiles:
+    active: outbound

@@ -1,0 +1,17 @@
+server:
+  port: 8083
+infra:
+  node:
+    api-key: d3c8b8f2-1087-44bf-b400-80801c0107e6
+
+spring:
+  ai:
+    model:
+      chat: ollama
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: gemma4:e4b
+        temperature: 0.7
+  application:
+    name: worker-tool-example
