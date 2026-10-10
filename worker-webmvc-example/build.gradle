@@ -7,7 +7,7 @@ plugins {
 dependencies {
     // InfraMesh Node SDK - node contract plus the Outbound Connection SDK (persistent Console
     // connection, auto-configured only when inframesh.node.connection-mode=OUTBOUND)
-    implementation 'io.github.inframeshai:inframesh-node:0.1.1'
+    implementation 'io.github.inframeshai:inframesh-node:0.1.2'
 
     // Web Application
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
