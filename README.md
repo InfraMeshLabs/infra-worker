@@ -862,6 +862,19 @@ If an underlying runtime does not support a requested capability, the Worker sho
 
 ---
 
+# Session ID and Isolation
+
+Console uses the request `sessionId` only to keep a session on the same Worker (Session Affinity). It is a routing hint, not an identity.
+
+- Do not use `sessionId` as an authentication or authorization mechanism.
+- Do not grant access to user or tenant data based on `sessionId` alone.
+- Assume that different members of the same team may send the same `sessionId`. Console authenticates each client with its own team member API key, but Session Affinity is shared per team, and the Worker protocol does not carry the caller's identity.
+- A stateful Worker that stores conversation history, caches or files per session must enforce its own user / tenant isolation.
+
+Session Affinity selects a Worker. It is not an authorization boundary.
+
+---
+
 # Getting Started
 
 ## 1. Requirements
