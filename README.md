@@ -84,13 +84,11 @@ The SDK provides common components and contracts required to participate in the 
 - Common node configuration
 - Outbound Connection SDK — the persistent Console connection (WebSocket client, authentication, heartbeat, reconnect, lifecycle) used in OUTBOUND mode
 
-During local development, the SDK can be included as a JAR dependency.
+The SDK is published to Maven Central as `io.github.inframeshai:inframesh-node`.
 
 ```gradle
 dependencies {
-    implementation files(
-        "${rootProject.projectDir}/libs/infra-node-1.0.0.jar"
-    )
+    implementation 'io.github.inframeshai:inframesh-node:0.1.5'
 }
 ```
 
@@ -906,31 +904,21 @@ ollama pull <model>
 
 ## 2. Add infra-node
 
-Place the SDK JAR under the repository-level `libs` directory:
-
-```text
-infra-worker
-├── libs
-│   └── infra-node-1.0.0.jar
-│
-├── worker-webmvc-example
-├── worker-stream-example
-└── worker-tool-example
-```
-
-Then reference it from the Worker module:
+Add the SDK from Maven Central to the Worker module:
 
 ```gradle
+repositories {
+    mavenCentral()
+}
+
 dependencies {
-    implementation files(
-        "${rootProject.projectDir}/libs/infra-node-1.0.0.jar"
-    )
+    implementation 'io.github.inframeshai:inframesh-node:0.1.5'
 }
 ```
 
-Using `rootProject.projectDir` is important in a multi-module Gradle project because a relative `libs/...` path would otherwise be resolved from the individual subproject.
-
-When repository-based distribution becomes available, this dependency can be replaced with the corresponding repository dependency.
+Until a version is on Maven Central, publish it from the `infra-node` repository with
+`./gradlew publishToMavenLocal` and add `mavenLocal()` to the repositories (this repository's
+root build already does).
 
 ---
 
@@ -1191,21 +1179,27 @@ This heterogeneous execution model is one of the primary goals of InfraMesh.
 
 ---
 
-# Fat JAR Development Dependency
+# Local SDK Development Dependency
 
-During development, `infra-node` may be distributed as a local JAR rather than through a Maven-compatible repository.
+To try an `infra-node` change before it is released, publish it to Maven Local from the
+`infra-node` repository and depend on that version:
 
-Use:
+```bash
+cd ../infra-node && ./gradlew publishToMavenLocal
+```
 
 ```gradle
-implementation files(
-    "${rootProject.projectDir}/libs/infra-node-1.0.0.jar"
-)
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'io.github.inframeshai:inframesh-node:0.1.5'
+}
 ```
 
 Avoid defining duplicate versions of SDK contracts inside Worker modules.
-
-Once `infra-node` is distributed through a Maven-compatible repository, dependency metadata and transitive dependencies can be managed through Gradle normally.
 
 ---
 
