@@ -21,7 +21,7 @@ translates between the InfraMesh protocol and the AI runtime's own tool-calling 
 | Purpose | Tool Calling example Worker (plus plain chat) |
 | Web stack | Spring WebFlux (Netty) |
 | AI runtime | Spring AI `ChatModel` — Ollama by default |
-| SDK dependency | `libs/inframesh-node-1.0.0.jar` (JAR only, no `infra-node` source dependency) |
+| SDK dependency | `io.github.inframeshai:inframesh-node:0.1.5` (Maven artifact, no `infra-node` source dependency) |
 | Default port | `8083` |
 
 It sits alongside the other two example Workers, each demonstrating a different concern:
@@ -40,23 +40,26 @@ Tool Calling and the web stack are independent decisions, but this module bases 
 - The requirements cover general chat, non-streaming Tool Calling, and (where possible)
   **streaming** Tool Calling. `worker-webmvc-example` has no `/stream` endpoint at all, so
   covering streaming would mean rebuilding a reactive pipeline anyway.
-- `inframesh-node-1.0.0.jar` models streaming tool calls as a first-class concept
+- `inframesh-node` models streaming tool calls as a first-class concept
   (`ChatStreamResponse.toolCallDeltas` / `ToolCallDelta`), which maps naturally onto a
   `Flux` pipeline.
 - Reusing the `worker-stream-example` structure means this module exposes both `/invoke`
   (`Mono<ChatResponse>`) and `/stream` (`Flux<ChatStreamResponse>`) exactly like that module,
   satisfying "general chat + tool calling" without inventing a new endpoint shape.
 
-## inframesh-node-1.0.0.jar dependency
+## inframesh-node dependency
 
-Same convention as the other two modules — a local JAR file reference, not a project
+Same convention as the other two modules — the published Maven artifact, not a project
 dependency on `infra-node` sources:
 
 ```gradle
 dependencies {
-    implementation files("${rootProject.projectDir}/libs/inframesh-node-1.0.0.jar")
+    implementation 'io.github.inframeshai:inframesh-node:0.1.5'
 }
 ```
+
+Until `0.1.5` is on Maven Central, publish it locally from the `infra-node` repository first
+(`./gradlew publishToMavenLocal`); the root build reads `mavenLocal()`.
 
 Health (`GET /api/v1/health`) and API key authentication (`X-Infra-Api-Key`) under
 `/api/v1/**` are provided automatically by the SDK's `NodeAutoConfiguration` — there is no
