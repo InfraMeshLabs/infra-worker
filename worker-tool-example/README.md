@@ -21,7 +21,7 @@ translates between the InfraMesh protocol and the AI runtime's own tool-calling 
 | Purpose | Tool Calling example Worker (plus plain chat) |
 | Web stack | Spring WebFlux (Netty) |
 | AI runtime | Spring AI `ChatModel` — Ollama by default |
-| SDK dependency | `io.github.inframeshai:inframesh-node:0.1.5` (Maven artifact, no `infra-node` source dependency) |
+| SDK dependency | `io.github.inframeshai:inframesh-node:0.1.6` (Maven artifact, no `infra-node` source dependency) |
 | Default port | `8083` |
 
 It sits alongside the other two example Workers, each demonstrating a different concern:
@@ -54,11 +54,11 @@ dependency on `infra-node` sources:
 
 ```gradle
 dependencies {
-    implementation 'io.github.inframeshai:inframesh-node:0.1.5'
+    implementation 'io.github.inframeshai:inframesh-node:0.1.6'
 }
 ```
 
-Until `0.1.5` is on Maven Central, publish it locally from the `infra-node` repository first
+Until `0.1.6` is on Maven Central, publish it locally from the `infra-node` repository first
 (`./gradlew publishToMavenLocal`); the root build reads `mavenLocal()`.
 
 Health (`GET /api/v1/health`) and API key authentication (`X-Infra-Api-Key`) under
