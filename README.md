@@ -88,7 +88,7 @@ The SDK is published to Maven Central as `io.github.inframeshai:inframesh-node`.
 
 ```gradle
 dependencies {
-    implementation 'io.github.inframeshai:inframesh-node:0.1.5'
+    implementation 'io.github.inframeshai:inframesh-node:0.1.6'
 }
 ```
 
@@ -912,7 +912,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.github.inframeshai:inframesh-node:0.1.5'
+    implementation 'io.github.inframeshai:inframesh-node:0.1.6'
 }
 ```
 
@@ -1195,7 +1195,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.github.inframeshai:inframesh-node:0.1.5'
+    implementation 'io.github.inframeshai:inframesh-node:0.1.6'
 }
 ```
 
